@@ -13,7 +13,13 @@
     gap: 8px;
     margin-bottom: 16px;
   }
-  
+  .table th.highlight {
+    background-color: #7cb6e9; /* Light blue color */
+    color: #000; /* Dark text color */
+    font-weight: bold;
+    cursor: pointer;
+    
+  }
   .input {
     border: 1px solid #ccc;
     padding: 8px;

@@ -3,12 +3,17 @@ import './DataFetcher.css'; // Import the CSS file
 
 const DataFetcher = () => {
   const [data, setData] = useState([]);
-  const [filter, setFilter] = useState(6.11);
-  const [criteria, setCriteria] = useState('eps');
-
-  const fetchData = async () => {
+  const [filterBy, setFilter] = useState("revenue");
+  const [criteria, setCriteria] = useState(0);
+  const [sortBy, setSort] = useState('');
+  const [sortDirection, setSortDirection] = useState('desc');
+  const [selectedColumn, setSelectedColumn] = useState("");
+  const [selectedOperator, setSelectedOperator] = useState(">");
+  const columns = ["date", "revenue", "netIncome", "grossProfit", "eps", "operatingIncome"];
+  const operators = [">", "=", "<"];
+  const filterData = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/data?filter=${filter}&criteria=${criteria}`);
+      const response = await fetch(`http://localhost:5000/api/data?filter=${filterBy}&criteria=${criteria}&operator=${selectedOperator}`);
       const result = await response.json();
       setData(result);
       console.log(result);
@@ -16,31 +21,70 @@ const DataFetcher = () => {
       console.error('Error fetching data:', error);
     }
   };
-
   useEffect(() => {
-    fetchData();
-  }, [filter, criteria]);
+    if (sortBy) {
+      sortData();
+    }
+  }, [sortBy, sortDirection]);
 
+  const setSortVars = async (column) => {
+    setSort(column);
+    // setDir(dir);
+    setSelectedColumn(column);
+    if (selectedColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortDirection("desc"); 
+    }
+  }
+  const renderArrow = (column) => {
+    if (selectedColumn !== column) return null; 
+    return sortDirection === "asc" ? "↑" : "↓"; 
+  };
+  const sortData = async () => { 
+    try { 
+      const response = await fetch(`http://localhost:5000/api/data?sort=${sortBy}&order=${sortDirection}`);
+      const result = await response.json();
+      setData(result);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  }
   return (
     <div className="container">
-      <h1 className="title">Fetched Data</h1>
+      <h1 className="title">Apple Income Statements</h1>
       <div className="input-group">
-        <input
-          type="text"
+      <select
           className="input"
-          placeholder="Enter filter"
-          value={filter}
+          value={filterBy}
           onChange={(e) => setFilter(e.target.value)}
-        />
-        <input
-          type="text"
+        >
+          {columns.map((column) => (
+            <option key={column} value={column}>
+              {column}
+            </option>
+          ))}
+      </select>
+      <select
           className="input"
-          placeholder="Enter criteria"
+          value={selectedOperator}
+          onChange={(e) => setSelectedOperator(e.target.value)}
+        >
+          {operators.map((operator) => (
+            <option key={operator} value={operator}>
+              {operator}
+            </option>
+          ))}
+        </select>
+        <input
+          type="number"
+          className="input"
+          placeholder="Enter value"
           value={criteria}
           onChange={(e) => setCriteria(e.target.value)}
         />
-        <button className="button" onClick={fetchData}>
-          Fetch Data
+        <button className="button" onClick={filterData}>
+          Filter
         </button>
       </div>
 
@@ -49,12 +93,18 @@ const DataFetcher = () => {
           <table className="table">
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Revenue</th>
-                <th>Net Income</th>
-                <th>Gross Profit</th>
-                <th>EPS</th>
-                <th>Operating Income</th>
+                <th onClick={() => (setSortVars('date'))} className={selectedColumn === "date" ? "highlight" : ""}>
+                  Date {renderArrow("date")}</th>
+                <th onClick={() => (setSortVars('revenue'))} className={selectedColumn === "revenue" ? "highlight" : ""}>
+                  Revenue {renderArrow("revenue")}</th>
+                <th onClick={() => (setSortVars('netIncome'))} className={selectedColumn === "netIncome" ? "highlight" : ""}>
+                  Net Income {renderArrow("netIncome")}</th>
+                <th onClick={() => (setSortVars('grossProfit'))} className={selectedColumn === "grossProfit" ? "highlight" : ""}>
+                  Gross Profit {renderArrow("grossProfit")}</th>
+                <th onClick={() => (setSortVars('eps'))} className={selectedColumn === "eps" ? "highlight" : ""}>
+                  EPS {renderArrow("eps")}</th>
+                <th onClick={() => (setSortVars('operatingIncome'))} className={selectedColumn === "operatingIncome" ? "highlight" : ""}>
+                  Operating Income {renderArrow("operatingIncome")}</th>
               </tr>
             </thead>
             <tbody>

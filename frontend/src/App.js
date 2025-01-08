@@ -4,7 +4,7 @@ import DataFetcher from './DataFetcher';
 function App() {
   return (
     <div className="App">
-      <DataFetcher />  {/* Use the DataFetcher component here */}
+      <DataFetcher />  {}
     </div>
   );
 }
