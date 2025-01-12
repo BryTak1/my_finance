@@ -3,101 +3,140 @@ import './DataFetcher.css'; // Import the CSS file
 
 const DataFetcher = () => {
   const [data, setData] = useState([]);
-  const [filterBy, setFilter] = useState("revenue");
-  const [criteria, setCriteria] = useState(0);
-  const [sortBy, setSort] = useState('');
-  const [sortDirection, setSortDirection] = useState('desc');
-  const [selectedColumn, setSelectedColumn] = useState("");
-  const [selectedOperator, setSelectedOperator] = useState(">");
-  const columns = ["date", "revenue", "netIncome", "grossProfit", "eps", "operatingIncome"];
-  const operators = [">", "=", "<"];
-  const filterData = async () => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/data?filter=${filterBy}&criteria=${criteria}&operator=${selectedOperator}`);
-      const result = await response.json();
-      setData(result);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-  useEffect(() => {
-    if (sortBy) {
-      sortData();
-    }
-  }, [sortBy, sortDirection]);
+  const [filterType, setFilterType] = useState("dateRange");
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [revenueRange, setRevenueRange] = useState({ min: '', max: '' });
+  const [netIncomeRange, setNetIncomeRange] = useState({ min: '', max: '' });
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
 
-  const setSortVars = async (column) => {
-    setSort(column);
-    // setDir(dir);
-    setSelectedColumn(column);
-    if (selectedColumn === column) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortDirection("desc"); 
+  const fetchData = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (filterType === "dateRange") {
+        params.append("startYear", dateRange.start);
+        params.append("endYear", dateRange.end);
+      } else if (filterType === "revenueRange") {
+        params.append("minRevenue", revenueRange.min);
+        params.append("maxRevenue", revenueRange.max);
+      } else if (filterType === "netIncomeRange") {
+        params.append("minNetIncome", netIncomeRange.min);
+        params.append("maxNetIncome", netIncomeRange.max);
+      }
+
+      const response = await fetch(`http://localhost:5000/api/data?${params.toString()}`);
+      const result = await response.json();
+      setData(result);
+    } catch (error) {
+      console.error('Error fetching data:', error);
     }
-  }
-  const renderArrow = (column) => {
-    if (selectedColumn !== column) return null; 
-    return sortDirection === "asc" ? "↑" : "↓"; 
   };
-  const resetData = async () => {
-    try { 
-      const response = await fetch(`http://localhost:5000/api/data?`);
-      const result = await response.json();
-      setCriteria(0);
-      setFilter("revenue");
-      setData(result);
-    } catch (error) {
-      console.error('Error fetching data:', error);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Sorting logic
+  const sortData = (key) => {
+    let direction = 'descending';
+    if (sortConfig.key === key && sortConfig.direction === 'descending') {
+      direction = 'ascending';
     }
-  }
-  const sortData = async () => { 
-    try { 
-      const response = await fetch(`http://localhost:5000/api/data?sort=${sortBy}&order=${sortDirection}`);
-      const result = await response.json();
-      setData(result);
-    } catch (error) {
-      console.error('Error fetching data:', error);
+    setSortConfig({ key, direction });
+
+    const sortedData = [...data].sort((a, b) => {
+      if (a[key] < b[key]) {
+        return direction === 'ascending' ? -1 : 1;
+      }
+      if (a[key] > b[key]) {
+        return direction === 'ascending' ? 1 : -1;
+      }
+      return 0;
+    });
+
+    setData(sortedData);
+  };
+
+  // Helper to get arrow for sorting direction
+  const getSortArrow = (key) => {
+    if (sortConfig.key === key) {
+      return sortConfig.direction === 'ascending' ? '▲' : '▼';
     }
-  }
+    return '';
+  };
+
   return (
     <div className="container">
       <h1 className="title">Apple Income Statements</h1>
       <div className="input-group">
-      <select
+        <select
           className="input"
-          value={filterBy}
-          onChange={(e) => setFilter(e.target.value)}
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value)}
         >
-          {columns.map((column) => (
-            <option key={column} value={column}>
-              {column}
-            </option>
-          ))}
-      </select>
-      <select
-          className="input"
-          value={selectedOperator}
-          onChange={(e) => setSelectedOperator(e.target.value)}
-        >
-          {operators.map((operator) => (
-            <option key={operator} value={operator}>
-              {operator}
-            </option>
-          ))}
+          <option value="dateRange">Date Range</option>
+          <option value="revenueRange">Revenue Range</option>
+          <option value="netIncomeRange">Net Income Range</option>
         </select>
-        <input
-          type="number"
-          className="input"
-          placeholder="Enter value"
-          value={criteria}
-          onChange={(e) => setCriteria(e.target.value)}
-        />
-        <button className="button" onClick={filterData}>
+
+        {filterType === "dateRange" && (
+          <div>
+            <input
+              type="number"
+              className="input"
+              placeholder="Start Year"
+              value={dateRange.start}
+              onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+            />
+            <input
+              type="number"
+              className="input"
+              placeholder="End Year"
+              value={dateRange.end}
+              onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+            />
+          </div>
+        )}
+
+        {filterType === "revenueRange" && (
+          <div>
+            <input
+              type="number"
+              className="input"
+              placeholder="Min Revenue"
+              value={revenueRange.min}
+              onChange={(e) => setRevenueRange({ ...revenueRange, min: e.target.value })}
+            />
+            <input
+              type="number"
+              className="input"
+              placeholder="Max Revenue"
+              value={revenueRange.max}
+              onChange={(e) => setRevenueRange({ ...revenueRange, max: e.target.value })}
+            />
+          </div>
+        )}
+
+        {filterType === "netIncomeRange" && (
+          <div>
+            <input
+              type="number"
+              className="input"
+              placeholder="Min Net Income"
+              value={netIncomeRange.min}
+              onChange={(e) => setNetIncomeRange({ ...netIncomeRange, min: e.target.value })}
+            />
+            <input
+              type="number"
+              className="input"
+              placeholder="Max Net Income"
+              value={netIncomeRange.max}
+              onChange={(e) => setNetIncomeRange({ ...netIncomeRange, max: e.target.value })}
+            />
+          </div>
+        )}
+
+        <button className="button" onClick={fetchData}>
           Filter
-        </button>
-        <button className="button" onClick={resetData}>
-          Reset
         </button>
       </div>
 
@@ -106,32 +145,32 @@ const DataFetcher = () => {
           <table className="table">
             <thead>
               <tr>
-                <th onClick={() => (setSortVars('date'))} className={selectedColumn === "date" ? "highlight" : ""}>
-                  Date {renderArrow("date")}</th>
-                <th onClick={() => (setSortVars('revenue'))} className={selectedColumn === "revenue" ? "highlight" : ""}>
-                  Revenue {renderArrow("revenue")}</th>
-                <th onClick={() => (setSortVars('netIncome'))} className={selectedColumn === "netIncome" ? "highlight" : ""}>
-                  Net Income {renderArrow("netIncome")}</th>
-                <th onClick={() => (setSortVars('grossProfit'))} className={selectedColumn === "grossProfit" ? "highlight" : ""}>
-                  Gross Profit {renderArrow("grossProfit")}</th>
-                <th onClick={() => (setSortVars('eps'))} className={selectedColumn === "eps" ? "highlight" : ""}>
-                  EPS {renderArrow("eps")}</th>
-                <th onClick={() => (setSortVars('operatingIncome'))} className={selectedColumn === "operatingIncome" ? "highlight" : ""}>
-                  Operating Income {renderArrow("operatingIncome")}</th>
+                <th onClick={() => sortData('date')}>
+                  Date {getSortArrow('date')}
+                </th>
+                <th onClick={() => sortData('revenue')}>
+                  Revenue {getSortArrow('revenue')}
+                </th>
+                <th onClick={() => sortData('netIncome')}>
+                  Net Income {getSortArrow('netIncome')}
+                </th>
+                <th>Gross Profit</th>
+                <th>EPS</th>
+                <th>Operating Income</th>
               </tr>
             </thead>
             <tbody>
               {data.map((item, index) => (
                 <tr key={index}>
                   <td>{item.date}</td>
-                  <td>{item.revenue}</td>
-                  <td>{item.netIncome}</td>
-                  <td>{item.grossProfit}</td>
+                  <td>{(item.revenue / 1e9).toFixed(2)} Billion</td>
+                  <td>{(item.netIncome / 1e9).toFixed(2)} Billion</td>
+                  <td>{(item.grossProfit / 1e9).toFixed(2)} Billion</td>
                   <td>{item.eps}</td>
-                  <td>{item.operatingIncome}</td>
+                  <td>{(item.operatingIncome / 1e9).toFixed(2)} Billion</td>
                 </tr>
               ))}
-            </tbody>
+          </tbody>  
           </table>
         </div>
       ) : (

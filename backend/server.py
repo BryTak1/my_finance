@@ -1,45 +1,32 @@
 from flask import Flask, jsonify, request
-import requests
 from flask_cors import CORS
+
 app = Flask(__name__)
 CORS(app)
+
+# data_fresh = [...]  # Your data goes here
+
 @app.route('/api/data', methods=['GET'])
 def get_data():
     data = data_fresh
-    filter_param = request.args.get('filter', default="revenue")
-    criteria = request.args.get('criteria', default = 0)
-    sort_param = request.args.get('sort', default=None)
-    sort_order = request.args.get('order', default=None)
-    operator = request.args.get('operator', default=">")
-    if filter_param == "date":
-        filter_param = "calendarYear"
-    if filter_param and criteria and operator == "=":
-        for item in data:
-            print(item[filter_param])
-            if float(item[filter_param]) == float(criteria):
-                data = [item]
-    elif filter_param and criteria and operator == ">":
-        new_data = []
-        for item in data:
-            print(item[filter_param])
-            if float(item[filter_param]) > float(criteria):
-                new_data.append(item)
-        data = new_data
-    elif filter_param and criteria and operator == "<":
-        new_data = []
-        for item in data:
-            print(item[filter_param])
-            if float(item[filter_param]) < float(criteria):
-                new_data.append(item)
-        data = new_data
-    
-    if sort_param:
-        if sort_param == "date":
-            sort_param = "calendarYear"
-        reverse = sort_order.lower() == 'desc'
-        data = sorted(data, key=lambda x: x.get(sort_param, 0), reverse=reverse)
 
+    start_year = request.args.get('startYear')
+    end_year = request.args.get('endYear')
+    min_revenue = request.args.get('minRevenue', type=float)
+    max_revenue = request.args.get('maxRevenue', type=float)
+    min_net_income = request.args.get('minNetIncome', type=float)
+    max_net_income = request.args.get('maxNetIncome', type=float)
+
+    if start_year and end_year:
+        data = [item for item in data if int(item['calendarYear']) >= int(start_year) and int(item['calendarYear']) <= int(end_year)]
+
+    if min_revenue is not None and max_revenue is not None:
+        data = [item for item in data if min_revenue <= item['revenue'] <= max_revenue]
+
+    if min_net_income is not None and max_net_income is not None:
+        data = [item for item in data if min_net_income <= item['netIncome'] <= max_net_income]
     return jsonify(data)
+
 if __name__ == '__main__':
     # response = requests.get('https://financialmodelingprep.com/api/v3/income-statement/AAPL?period=annual&apikey=Q2bmZrKaXniJkNcHc7vPTOe6s6YkRqxx')
     # data_fresh = response.json()
