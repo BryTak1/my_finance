@@ -11,28 +11,31 @@ def get_data():
     sort_param = request.args.get('sort', default=None)
     sort_order = request.args.get('order', default=None)
     operator = request.args.get('operator', default=">")
-
+    if filter_param == "date":
+        filter_param = "calendarYear"
     if filter_param and criteria and operator == "=":
         for item in data:
             print(item[filter_param])
-            if item[filter_param] == float(criteria):
+            if float(item[filter_param]) == float(criteria):
                 data = [item]
     elif filter_param and criteria and operator == ">":
         new_data = []
         for item in data:
             print(item[filter_param])
-            if item[filter_param] > float(criteria):
+            if float(item[filter_param]) > float(criteria):
                 new_data.append(item)
         data = new_data
     elif filter_param and criteria and operator == "<":
         new_data = []
         for item in data:
             print(item[filter_param])
-            if item[filter_param] < float(criteria):
+            if float(item[filter_param]) < float(criteria):
                 new_data.append(item)
         data = new_data
     
     if sort_param:
+        if sort_param == "date":
+            sort_param = "calendarYear"
         reverse = sort_order.lower() == 'desc'
         data = sorted(data, key=lambda x: x.get(sort_param, 0), reverse=reverse)
 

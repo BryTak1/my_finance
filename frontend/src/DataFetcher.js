@@ -16,7 +16,6 @@ const DataFetcher = () => {
       const response = await fetch(`http://localhost:5000/api/data?filter=${filterBy}&criteria=${criteria}&operator=${selectedOperator}`);
       const result = await response.json();
       setData(result);
-      console.log(result);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -41,6 +40,17 @@ const DataFetcher = () => {
     if (selectedColumn !== column) return null; 
     return sortDirection === "asc" ? "↑" : "↓"; 
   };
+  const resetData = async () => {
+    try { 
+      const response = await fetch(`http://localhost:5000/api/data?`);
+      const result = await response.json();
+      setCriteria(0);
+      setFilter("revenue");
+      setData(result);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  }
   const sortData = async () => { 
     try { 
       const response = await fetch(`http://localhost:5000/api/data?sort=${sortBy}&order=${sortDirection}`);
@@ -85,6 +95,9 @@ const DataFetcher = () => {
         />
         <button className="button" onClick={filterData}>
           Filter
+        </button>
+        <button className="button" onClick={resetData}>
+          Reset
         </button>
       </div>
 
