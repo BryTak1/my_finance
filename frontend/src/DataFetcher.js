@@ -9,7 +9,7 @@ const DataFetcher = () => {
   const [netIncomeRange, setNetIncomeRange] = useState({ min: '', max: '' });
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
 
-  // Fetch data from the third-party API directly within React
+
   const fetchData = async () => {
     try {
       const response = await fetch('https://financialmodelingprep.com/api/v3/income-statement/AAPL?period=annual&apikey=Q2bmZrKaXniJkNcHc7vPTOe6s6YkRqxx');
@@ -21,10 +21,10 @@ const DataFetcher = () => {
   };
 
   useEffect(() => {
-    fetchData(); // Call fetchData on component mount
+    fetchData();
   }, []);
 
-  // Sorting logic
+
   const sortData = (key) => {
     let direction = 'descending';
     if (sortConfig.key === key && sortConfig.direction === 'descending') {
@@ -45,7 +45,7 @@ const DataFetcher = () => {
     setData(sortedData);
   };
 
-  // Helper to get arrow for sorting direction
+
   const getSortArrow = (key) => {
     if (sortConfig.key === key) {
       return sortConfig.direction === 'ascending' ? '▲' : '▼';
@@ -53,7 +53,7 @@ const DataFetcher = () => {
     return '';
   };
 
-  // Filter logic based on filterType
+
   const filterData = () => {
     let filteredData = [...data];
 
