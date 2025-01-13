@@ -1,9 +1,9 @@
 /* Container Styles */
 .container {
   padding: 16px;
-  font-family: Arial, sans-serif;
-  color: #333;
-  background-color: #f9f9f9;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  color: #2d3436;
+  background-color: #f1f8f6;
 }
 
 /* Title Styles */
@@ -11,7 +11,7 @@
   font-size: 2rem;
   font-weight: bold;
   margin-bottom: 20px;
-  color: #2c3e50;
+  color: #34495e;
   text-align: center;
 }
 
@@ -25,7 +25,7 @@
 }
 
 .input {
-  border: 1px solid #ddd;
+  border: 1px solid #ccd1d1;
   padding: 10px 12px;
   border-radius: 4px;
   font-size: 1rem;
@@ -34,12 +34,12 @@
 }
 
 .input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+  border-color: #70a1d7;
+  box-shadow: 0 0 5px rgba(112, 161, 215, 0.5);
 }
 
 .button {
-  background-color: #3b82f6;
+  background-color: #70a2d7b5;
   color: white;
   padding: 10px 20px;
   border: none;
@@ -50,7 +50,7 @@
 }
 
 .button:hover {
-  background-color: #2563eb;
+  background-color: #3498db;
   transform: scale(1.05);
 }
 
@@ -77,21 +77,21 @@
 }
 
 .table th {
-  background-color: #3b82f6;
-  color: white;
+  background-color: #bfc3bd;
+  color: rgba(0, 0, 0, 0.778);
   cursor: pointer;
 }
 
 .table th:hover {
-  background-color: #2563eb;
+  background-color: #3498db;
 }
 
 .table tr:nth-child(even) {
-  background-color: #f3f3f3;
+  background-color: #f8f9fa;
 }
 
 .table tr:hover {
-  background-color: #eef6ff;
+  background-color: #f1f8f6;
 }
 
 /* Sorting Indicators */
@@ -113,7 +113,7 @@
 
 /* Highlighted Header */
 .table th.highlight {
-  background-color: #7cb6e9;
+  background-color: #a2d9ce;
   font-weight: bold;
 }
 
@@ -132,5 +132,32 @@
   .table th,
   .table td {
     font-size: 0.9rem;
+  }
+}
+
+.App {
+  justify-content: center;
+  display: flex;
+  background-image: linear-gradient(120deg, #e0f7fa, #80deea);
+  height: 100vh;
+}
+
+html, body {
+  height: 100vh;
+  min-height: 100vh;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
