@@ -9,21 +9,10 @@ const DataFetcher = () => {
   const [netIncomeRange, setNetIncomeRange] = useState({ min: '', max: '' });
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
 
+  // Fetch data from the third-party API directly within React
   const fetchData = async () => {
     try {
-      const params = new URLSearchParams();
-      if (filterType === "dateRange") {
-        params.append("startYear", dateRange.start);
-        params.append("endYear", dateRange.end);
-      } else if (filterType === "revenueRange") {
-        params.append("minRevenue", revenueRange.min);
-        params.append("maxRevenue", revenueRange.max);
-      } else if (filterType === "netIncomeRange") {
-        params.append("minNetIncome", netIncomeRange.min);
-        params.append("maxNetIncome", netIncomeRange.max);
-      }
-
-      const response = await fetch(`http://localhost:5000/api/data?${params.toString()}`);
+      const response = await fetch('https://financialmodelingprep.com/api/v3/income-statement/AAPL?period=annual&apikey=Q2bmZrKaXniJkNcHc7vPTOe6s6YkRqxx');
       const result = await response.json();
       setData(result);
     } catch (error) {
@@ -32,7 +21,7 @@ const DataFetcher = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchData(); // Call fetchData on component mount
   }, []);
 
   // Sorting logic
@@ -62,6 +51,40 @@ const DataFetcher = () => {
       return sortConfig.direction === 'ascending' ? '▲' : '▼';
     }
     return '';
+  };
+
+  // Filter logic based on filterType
+  const filterData = () => {
+    let filteredData = [...data];
+
+    if (filterType === 'dateRange') {
+      if (dateRange.start && dateRange.end) {
+        filteredData = filteredData.filter(item => 
+          parseInt(item.calendarYear) >= parseInt(dateRange.start) &&
+          parseInt(item.calendarYear) <= parseInt(dateRange.end)
+        );
+      }
+    }
+
+    if (filterType === 'revenueRange') {
+      if (revenueRange.min && revenueRange.max) {
+        filteredData = filteredData.filter(item =>
+          item.revenue >= parseFloat(revenueRange.min) &&
+          item.revenue <= parseFloat(revenueRange.max)
+        );
+      }
+    }
+
+    if (filterType === 'netIncomeRange') {
+      if (netIncomeRange.min && netIncomeRange.max) {
+        filteredData = filteredData.filter(item =>
+          item.netIncome >= parseFloat(netIncomeRange.min) &&
+          item.netIncome <= parseFloat(netIncomeRange.max)
+        );
+      }
+    }
+
+    return filteredData;
   };
 
   return (
@@ -160,7 +183,7 @@ const DataFetcher = () => {
               </tr>
             </thead>
             <tbody>
-              {data.map((item, index) => (
+              {filterData().map((item, index) => (
                 <tr key={index}>
                   <td>{item.date}</td>
                   <td>{(item.revenue / 1e9).toFixed(2)} Billion</td>
@@ -170,7 +193,7 @@ const DataFetcher = () => {
                   <td>{(item.operatingIncome / 1e9).toFixed(2)} Billion</td>
                 </tr>
               ))}
-          </tbody>  
+            </tbody>
           </table>
         </div>
       ) : (
